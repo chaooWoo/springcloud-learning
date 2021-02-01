@@ -46,12 +46,13 @@ public class ResourceServerConfig {
         //对白名单路径，直接移除JWT请求头
         http.addFilterBefore(ignoreUrlsRemoveJwtFilter, SecurityWebFiltersOrder.AUTHENTICATION);
         http.authorizeExchange()
-                .pathMatchers(ArrayUtil.toArray(ignoreUrlsConfig.getUrls(),String.class)).permitAll()//白名单配置
+                .pathMatchers(ArrayUtil.toArray(ignoreUrlsConfig.getUrls(),String.class)).permitAll()// 白名单配置，白名单的uri不做认证
                 .anyExchange().access(authorizationManager)//鉴权管理器配置
-                .and().exceptionHandling()
+                .and().exceptionHandling() // 异常handle设置，下面设置的...
                 .accessDeniedHandler(restfulAccessDeniedHandler)//处理未授权
                 .authenticationEntryPoint(restAuthenticationEntryPoint)//处理未认证
-                .and().csrf().disable();
+                .and()
+                .csrf().disable(); // 关闭csrf
         return http.build();
     }
 
