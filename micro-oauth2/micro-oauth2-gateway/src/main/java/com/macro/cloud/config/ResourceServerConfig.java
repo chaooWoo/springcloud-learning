@@ -38,16 +38,16 @@ public class ResourceServerConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http.oauth2ResourceServer().jwt()
-                .jwtAuthenticationConverter(jwtAuthenticationConverter());
+                .jwtAuthenticationConverter(jwtAuthenticationConverter()); // 配置OAuth2资源服务JWT的权限转换器
         
-        //自定义处理JWT请求头过期或签名错误的结果
+        // 自定义处理JWT请求头过期或签名错误的结果
         http.oauth2ResourceServer().authenticationEntryPoint(restAuthenticationEntryPoint);
         
         //对白名单路径，直接移除JWT请求头
         http.addFilterBefore(ignoreUrlsRemoveJwtFilter, SecurityWebFiltersOrder.AUTHENTICATION);
         http.authorizeExchange()
                 .pathMatchers(ArrayUtil.toArray(ignoreUrlsConfig.getUrls(),String.class)).permitAll()// 白名单配置，白名单的uri不做认证
-                .anyExchange().access(authorizationManager)//鉴权管理器配置
+                .anyExchange().access(authorizationManager)// 鉴权管理器配置 -> 资源-角色映射关系判断(是否有访问资源的角色权限)
                 .and().exceptionHandling() // 异常handle设置，下面设置的...
                 .accessDeniedHandler(restfulAccessDeniedHandler)//处理未授权
                 .authenticationEntryPoint(restAuthenticationEntryPoint)//处理未认证
@@ -59,8 +59,9 @@ public class ResourceServerConfig {
     @Bean
     public Converter<Jwt, ? extends Mono<? extends AbstractAuthenticationToken>> jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        jwtGrantedAuthoritiesConverter.setAuthorityPrefix(AuthConstant.AUTHORITY_PREFIX);
-        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName(AuthConstant.AUTHORITY_CLAIM_NAME);
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix(AuthConstant.AUTHORITY_PREFIX); // 设置角色前缀
+        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName(AuthConstant.AUTHORITY_CLAIM_NAME); // 设置提供的权限集合名字
+        
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
         return new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter);
