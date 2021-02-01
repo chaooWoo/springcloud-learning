@@ -26,12 +26,17 @@ public class IgnoreUrlsRemoveJwtFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
+        // 当前的uri
         URI uri = request.getURI();
         PathMatcher pathMatcher = new AntPathMatcher();
+        
         //白名单路径移除JWT请求头
         List<String> ignoreUrls = ignoreUrlsConfig.getUrls();
+        // 白名单uri循环
         for (String ignoreUrl : ignoreUrls) {
+            // 当前uri匹配到白名单uri时
             if (pathMatcher.match(ignoreUrl, uri.getPath())) {
+                // 将请求头中的Authorization字段移除
                 request = exchange.getRequest().mutate().header("Authorization", "").build();
                 exchange = exchange.mutate().request(request).build();
                 return chain.filter(exchange);
