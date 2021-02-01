@@ -26,15 +26,19 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String token = exchange.getRequest().getHeaders().getFirst("Authorization");
+        // 没有token时不处理
         if (StrUtil.isEmpty(token)) {
             return chain.filter(exchange);
         }
         try {
-            //从token中解析用户信息并设置到Header中去
+            // 从token中解析用户信息并设置到Header中去，JWT的格式一般为Bearer xxxxxxxx(token)
             String realToken = token.replace("Bearer ", "");
+            // com.nimbusds.jose.JWSObject对象，怎么解析的?
             JWSObject jwsObject = JWSObject.parse(realToken);
             String userStr = jwsObject.getPayload().toString();
             LOGGER.info("AuthGlobalFilter.filter() user:{}",userStr);
+            
+            // 向请求头中增加user字段，保存解析出来的user
             ServerHttpRequest request = exchange.getRequest().mutate().header("user", userStr).build();
             exchange = exchange.mutate().request(request).build();
         } catch (ParseException e) {
