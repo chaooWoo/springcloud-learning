@@ -59,6 +59,12 @@ public class ResourceServerConfig {
     @Bean
     public Converter<Jwt, ? extends Mono<? extends AbstractAuthenticationToken>> jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+        /*
+            1. 默认的JwtGrantedAuthoritiesConverter实现中AuthorityPrefix为SCOPE_
+            2. 默认的JwtGrantedAuthoritiesConverter实现中用于权限验证的token负载名字只有scope、scp两个
+            .. 但是可以通过方法来设置这两个值来实现我们的自定义
+            3. token负载中有一个map存储着权限，key为authoritiesClaimName，可能是用于生成token时使用的，自定义的
+        */
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix(AuthConstant.AUTHORITY_PREFIX); // 设置角色前缀
         jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName(AuthConstant.AUTHORITY_CLAIM_NAME); // 设置提供的权限集合名字
         
