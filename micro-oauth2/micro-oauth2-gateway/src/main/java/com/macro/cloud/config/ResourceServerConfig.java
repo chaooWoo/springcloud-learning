@@ -56,6 +56,9 @@ public class ResourceServerConfig {
         return http.build();
     }
 
+    
+    // ref: https://blog.csdn.net/qq_24230139/article/details/105091273
+    
     @Bean
     public Converter<Jwt, ? extends Mono<? extends AbstractAuthenticationToken>> jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
